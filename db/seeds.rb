@@ -9,8 +9,8 @@
 user1 = User.create!(name: "Kento")
 user2 = User.create!(name: "Taro")
 
-user1.create_profile
-user2.create_profile
+user1.create_profile(introduction: "My name is Kento!")
+user2.create_profile(introduction: "Hello, I'm Taro.")
 
 post1 = Post.create!(title: "Kento's post 1", description: "Awesome post", user: user1)
 post2 = Post.create!(title: "Kento's post 2", description: "Awesome post again", user: user1)
