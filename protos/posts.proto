@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package asnp;
+
+service Posts {
+  rpc List (PostsListRequest) returns (PostsListResponse) {}
+}
+
+message Post {
+  uint32 id = 1;
+  string title = 2;
+  string introduction = 3;
+}
+
+message PostsListResponse {
+  repeated Post posts = 1;
+}
+
+message PostsListRequest {
+  string message = 1;
+}
