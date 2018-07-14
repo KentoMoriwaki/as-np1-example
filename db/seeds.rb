@@ -5,3 +5,16 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+
+user1 = User.create!(name: "Kento")
+user2 = User.create!(name: "Taro")
+
+user1.create_profile
+user2.create_profile
+
+post1 = Post.create!(title: "Kento's post 1", description: "Awesome post", user: user1)
+post2 = Post.create!(title: "Kento's post 2", description: "Awesome post again", user: user1)
+
+user1.profile.update_attributes!(cover_post: post1)
+
+post3 = Post.create!(title: "Taro's post 1", description: "Cool post", user: user2)
