@@ -7,7 +7,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
   add_message "asnp.Post" do
     optional :id, :uint32, 1
     optional :title, :string, 2
-    optional :introduction, :string, 3
+    optional :description, :string, 3
   end
   add_message "asnp.PostsListResponse" do
     repeated :posts, :message, 1, "asnp.Post"
