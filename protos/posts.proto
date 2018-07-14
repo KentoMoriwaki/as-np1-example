@@ -6,10 +6,22 @@ service Posts {
   rpc List (PostsListRequest) returns (PostsListResponse) {}
 }
 
+message Profile {
+  uint64 id = 1;
+  string introduction = 2;
+}
+
+message User {
+  uint64 id = 1;
+  string name = 2;
+  Profile profile = 3;
+}
+
 message Post {
-  uint32 id = 1;
+  uint64 id = 1;
   string title = 2;
   string description = 3;
+  User user = 4;
 }
 
 message PostsListResponse {

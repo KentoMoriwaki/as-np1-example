@@ -16,7 +16,11 @@ module Grpc
     def transform(record, message)
       res = message.new
       message.descriptor.each do |fd|
-        res[fd.name] = record.public_send(fd.name)
+        if fd.submsg_name
+          res[fd.name] = transform(record.public_send(fd.name), fd.subtype.msgclass)
+        else
+          res[fd.name] = record.public_send(fd.name)
+        end
       end
       res
     end
