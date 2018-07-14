@@ -1,3 +1,13 @@
+module GRPC
+  def self.logger
+    LOGGER
+  end
+
+  LOGGER = Logging.logger(STDOUT)
+  LOGGER.level = :debug
+end
+
+
 # grpc_libs = "#{Rails.root}/lib/"
 # $LOAD_PATH.unshift(grpc_libs)
 

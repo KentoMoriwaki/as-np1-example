@@ -4,6 +4,7 @@ class GrpcServer
   def initialize
     @server = GRPC::RpcServer.new
     @server.add_http2_port(PORT, :this_port_is_insecure) # FIXME
+    Logging.logger['GRPC'].level = :debug
   end
 
   def set_handler(handler_klass)
