@@ -5,74 +5,48 @@ module Grpc
     def list(req, _call)
       posts = Post.all
       fields = req.fields
-      posts_messages = resolve_mapping(Asnp::Post, posts, fields)
+      posts_messages = resolve(Asnp::Post, posts, fields)
       Asnp::PostsListResponse.new({ posts: posts_messages })
     end
 
     private
 
-    def resolve_mapping(message, records, fields)
-      resolver = Resolver.new(message, records, fields)
-      resolver.resolve
-    end
-
-    def transform(record, message)
-      res = message.new
-      message.descriptor.each do |fd|
-        if fd.submsg_name
-          res[fd.name] = transform(record.public_send(fd.name), fd.subtype.msgclass)
-        else
-          res[fd.name] = record.public_send(fd.name)
-        end
-      end
-      res
+    def resolve(message, records, fields)
+      field_mask_node = FieldMaskNode.build(message, fields.paths)
+      traverser = Traverser.new(records, field_mask_node)
+      traverser.run
     end
   end
 end
 
-class Resolver
-  attr_reader :message_type, :records, :fields
+class Traverser
+  attr_reader :records, :field_mask_node
 
-  def initialize(message_type, records, fields)
-    @message_type = message_type
+  def initialize(records, field_mask_node)
     @records = records
-    @fields = fields
-    @root_node = FieldMaskNode.build(message_type, fields.paths)
+    @field_mask_node = field_mask_node
   end
 
-  def resolve
-    records.map do |record|
-      target = message_type.new
-      fields.paths.each_index do |path, index|
-        cur_target = target
-        cur_record = record
-        path.split('.').each do |field|
-          msg = cur_target.class.descriptor.index_by{|f| f.name }[field]
-          mapper = get_mapper_from_message(cur_target.class.descriptor).new(cur_record, msg)
-          val = mapper.public_send(field)
-          if msg.submsg_name
-            cur_target[field] = msg.subtype.msgclass.new
-          else
-            cur_target[field] = cur_record.public_send(field)
-          end
-          cur_target = cur_target[field]
-          cur_record = val
+  def run
+    traverse(field_mask_node, records)
+  end
+
+  def traverse(parent_node, record)
+    if record.is_a?(Enumerable)
+      record.map{|r| traverse(parent_node, r) }
+    else
+      mapper = parent_node.mapper.new(record)
+      msg = parent_node.descriptor.msgclass.new
+      parent_node.children.each do |field, child_node|
+        ret = if child_node.has_child?
+          traverse(child_node, mapper.public_send(field))
+        else
+          mapper.public_send(field)
         end
+        msg[field] = ret
       end
-      target
+      msg
     end
-  end
-
-  def get_model_from_message(message)
-    name = message.name
-    klass = name.split('.').last
-    klass.constantize
-  end
-
-  def get_mapper_from_message(message)
-    name = message.name
-    klass = name.split('.').last
-    "#{klass}Mapper".constantize
   end
 end
 
@@ -119,12 +93,21 @@ class FieldMaskNode
     return @repeated if defined?(@repeated)
     field_descriptor.label == :repeated
   end
+
+  def mapper
+    klass = descriptor.name.split('.').last
+    "#{klass}Mapper".constantize
+  end
+
+  def has_child?
+    !@descriptor.nil?
+  end
 end
 
 class BaseMapper
   attr_reader :record, :message
 
-  def initialize(record, message)
+  def initialize(record, message = nil)
     @record = record
     @message = message
   end
