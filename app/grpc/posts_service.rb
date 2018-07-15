@@ -20,32 +20,51 @@ module Grpc
 end
 
 class Traverser
-  attr_reader :records, :field_mask_node
+  attr_reader :record, :field_mask_node, :queue
 
-  def initialize(records, field_mask_node)
-    @records = records
+  def initialize(record, field_mask_node)
+    @record = record
     @field_mask_node = field_mask_node
   end
 
   def run
-    traverse(field_mask_node, records)
+    @queue = []
+    @result = []
+    Array.wrap(record).each do |rec|
+      mapper = field_mask_node.mapper.new(rec)
+      message = field_mask_node.descriptor.msgclass.new
+      @result << message
+      @queue << {
+        mapper: mapper,
+        message: message,
+        node: field_mask_node,
+      }
+    end
+    while task = @queue.shift
+      consume_task(task)
+    end
+    if record.is_a?(Enumerable)
+      @result
+    else
+      @result[0]
+    end
   end
 
-  def traverse(parent_node, record)
-    if record.is_a?(Enumerable)
-      record.map{|r| traverse(parent_node, r) }
-    else
-      mapper = parent_node.mapper.new(record)
-      msg = parent_node.descriptor.msgclass.new
-      parent_node.children.each do |field, child_node|
-        ret = if child_node.has_child?
-          traverse(child_node, mapper.public_send(field))
-        else
-          mapper.public_send(field)
-        end
-        msg[field] = ret
+  def consume_task(task)
+    mapper, message, node = task.values_at(:mapper, :message, :node)
+    node.children.each do |field, child_node|
+      if child_node.has_child?
+        child_message = child_node.descriptor.msgclass.new
+        child_mapper = child_node.mapper.new(mapper.public_send(field))
+        message[field] = child_message
+        @queue << {
+          mapper: child_mapper,
+          message: child_message,
+          node: child_node,
+        }
+      else
+        message[field] = mapper.public_send(field)
       end
-      msg
     end
   end
 end
