@@ -37,6 +37,7 @@ class Resolver
     @message_type = message_type
     @records = records
     @fields = fields
+    @root_node = FieldMaskNode.build(message_type, fields.paths)
   end
 
   def resolve
@@ -72,6 +73,51 @@ class Resolver
     name = message.name
     klass = name.split('.').last
     "#{klass}Mapper".constantize
+  end
+end
+
+class FieldMaskNode
+  attr_reader :field_descriptor, :descriptor, :children
+
+  def self.build(message, paths)
+    node = self.new(descriptor: message.descriptor, repeated: true)
+    paths.each do |path|
+      current_node = node
+      path.split(".").each do |field|
+        current_node = current_node.add_child(field)
+      end
+    end
+    node
+  end
+
+  def initialize(
+    descriptor: nil,
+    field_descriptor: nil,
+    children: {},
+    repeated: nil
+  )
+    @descriptor = descriptor
+    @field_descriptor = field_descriptor
+    @children = children
+    if field_descriptor && field_descriptor.type == :message
+      @descriptor = field_descriptor.subtype
+    end
+    unless repeated.nil?
+      @repeated = repeated
+    end
+  end
+
+  def add_child(name)
+    return children[name] if children[name]
+    fd = descriptor.find{|f| f.name == name }
+    child_node = self.class.new(field_descriptor: fd)
+    children[name] = child_node
+    child_node
+  end
+
+  def repeated?
+    return @repeated if defined?(@repeated)
+    field_descriptor.label == :repeated
   end
 end
 
