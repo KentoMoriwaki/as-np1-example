@@ -27,16 +27,6 @@ module Grpc
       end
       res
     end
-
-    def get_model_from_message(message)
-      name = message.submsg_name
-      klass = name.split('.').last
-      klass.constantize
-    end
-
-    def get_mapper
-
-    end
   end
 end
 
@@ -56,12 +46,13 @@ class Resolver
         cur_target = target
         cur_record = record
         path.split('.').each do |field|
-          val = cur_record.public_send(field)
-          desc = cur_target.class.descriptor.index_by{|f| f.name }[field]
-          if desc.submsg_name
-            cur_target[field] = desc.subtype.msgclass.new
+          msg = cur_target.class.descriptor.index_by{|f| f.name }[field]
+          mapper = get_mapper_from_message(cur_target.class.descriptor).new(cur_record, msg)
+          val = mapper.public_send(field)
+          if msg.submsg_name
+            cur_target[field] = msg.subtype.msgclass.new
           else
-            cur_target[field] = val
+            cur_target[field] = cur_record.public_send(field)
           end
           cur_target = cur_target[field]
           cur_record = val
@@ -70,14 +61,30 @@ class Resolver
       target
     end
   end
+
+  def get_model_from_message(message)
+    name = message.name
+    klass = name.split('.').last
+    klass.constantize
+  end
+
+  def get_mapper_from_message(message)
+    name = message.name
+    klass = name.split('.').last
+    "#{klass}Mapper".constantize
+  end
 end
 
 class BaseMapper
-  attr_reader :reader, :message
+  attr_reader :record, :message
 
   def initialize(record, message)
     @record = record
     @message = message
+  end
+
+  def method_missing(meth)
+    @record.public_send(meth)
   end
 end
 
