@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/field_mask.proto";
+
 package asnp;
 
 service Posts {
@@ -29,5 +31,6 @@ message PostsListResponse {
 }
 
 message PostsListRequest {
-  string message = 1;
+  google.protobuf.FieldMask fields = 1;
+  string message = 2;
 }

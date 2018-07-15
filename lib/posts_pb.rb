@@ -3,6 +3,7 @@
 
 require 'google/protobuf'
 
+require 'google/protobuf/field_mask_pb'
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_message "asnp.Profile" do
     optional :id, :uint64, 1
@@ -23,7 +24,8 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     repeated :posts, :message, 1, "asnp.Post"
   end
   add_message "asnp.PostsListRequest" do
-    optional :message, :string, 1
+    optional :fields, :message, 1, "google.protobuf.FieldMask"
+    optional :message, :string, 2
   end
 end
 

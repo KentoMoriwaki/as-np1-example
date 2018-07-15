@@ -4,7 +4,10 @@ class GrpcServer
   def initialize
     @server = GRPC::RpcServer.new
     @server.add_http2_port(PORT, :this_port_is_insecure) # FIXME
-    Logging.logger['GRPC'].level = :debug
+    Rails.application.config.logger = ActiveSupport::Logger.new(STDOUT)
+    Rails.application.config.logger.level = :debug
+    ActiveRecord::Base.logger = ActiveSupport::Logger.new(STDOUT)
+    ActiveRecord::Base.logger.level = :debug
   end
 
   def set_handler(handler_klass)
