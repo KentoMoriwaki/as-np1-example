@@ -13,6 +13,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     optional :id, :uint64, 1
     optional :name, :string, 2
     optional :profile, :message, 3, "asnp.Profile"
+    repeated :posts, :message, 4, "asnp.Post"
   end
   add_message "asnp.Post" do
     optional :id, :uint64, 1

@@ -29,10 +29,12 @@ class Traverser
 
   def run
     @queue = []
+    mapper_class = field_mask_node.mapper
+    message_class = field_mask_node.descriptor.msgclass
     @result = []
     Array.wrap(record).each do |rec|
-      mapper = field_mask_node.mapper.new(rec)
-      message = field_mask_node.descriptor.msgclass.new
+      mapper = mapper_class.new(rec)
+      message = message_class.new
       @result << message
       @queue << {
         mapper: mapper,
@@ -46,7 +48,7 @@ class Traverser
     if record.is_a?(Enumerable)
       @result
     else
-      @result[0]
+      @result.first
     end
   end
 
@@ -54,14 +56,30 @@ class Traverser
     mapper, message, node = task.values_at(:mapper, :message, :node)
     node.children.each do |field, child_node|
       if child_node.has_child?
-        child_message = child_node.descriptor.msgclass.new
-        child_mapper = child_node.mapper.new(mapper.public_send(field))
-        message[field] = child_message
-        @queue << {
-          mapper: child_mapper,
-          message: child_message,
-          node: child_node,
-        }
+        value = mapper.public_send(field)
+        mapper_class = child_node.mapper
+        message_class = child_node.descriptor.msgclass
+        if child_node.repeated
+          value.each do |val|
+            child_mapper = mapper_class.new(val)
+            child_message = message_class.new
+            message[field] << child_message
+            @queue << {
+              mapper: child_mapper,
+              message: child_message,
+              node: child_node,
+            }
+          end
+        else
+          child_mapper = mapper_class.new(value)
+          child_message = message_class.new
+          message[field] = child_message
+          @queue << {
+            mapper: child_mapper,
+            message: child_message,
+            node: child_node,
+          }
+        end
       else
         message[field] = mapper.public_send(field)
       end
@@ -70,7 +88,7 @@ class Traverser
 end
 
 class FieldMaskNode
-  attr_reader :field_descriptor, :descriptor, :children
+  attr_reader :field_descriptor, :descriptor, :repeated, :children
 
   def self.build(message, paths)
     node = self.new(descriptor: message.descriptor, repeated: true)
@@ -95,9 +113,7 @@ class FieldMaskNode
     if field_descriptor && field_descriptor.type == :message
       @descriptor = field_descriptor.subtype
     end
-    unless repeated.nil?
-      @repeated = repeated
-    end
+    @repeated = repeated.nil? ? field_descriptor.label == :repeated : repeated
   end
 
   def add_child(name)
@@ -106,11 +122,6 @@ class FieldMaskNode
     child_node = self.class.new(field_descriptor: fd)
     children[name] = child_node
     child_node
-  end
-
-  def repeated?
-    return @repeated if defined?(@repeated)
-    field_descriptor.label == :repeated
   end
 
   def mapper
@@ -157,6 +168,14 @@ class UserMapper < BaseMapper
   def profile
     BatchLoader.for(record.id).batch do |ids, loader|
       Profile.where(user_id: ids).each{|profile| loader.call(profile.user_id, profile) }
+    end
+  end
+
+  def posts
+    BatchLoader.for(record.id).batch do |ids, loader|
+      Post.where(user_id: ids).group_by(&:user_id).each do |user_id, posts|
+        loader.call(user_id, posts)
+      end
     end
   end
 end
