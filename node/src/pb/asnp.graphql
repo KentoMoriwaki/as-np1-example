@@ -1,0 +1,27 @@
+type Profile {
+  id: Number
+  introduction: String
+}
+
+type User {
+  id: Number
+  name: String
+  profile: Profile
+  posts: [Post]!
+}
+
+type Post {
+  id: Number
+  title: String
+  description: String
+  user: User
+}
+
+type PostsListResponse {
+  posts: [Post]!
+}
+
+type PostsListRequest {
+  fields: FieldMask
+  message: String
+}
