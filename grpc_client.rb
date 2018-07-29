@@ -9,6 +9,8 @@ field_mask = Google::Protobuf::FieldMask.new(paths: [
   "user.posts.title",
   "user.posts.description"
 ])
-res = stub.list(Asnp::PostsListRequest.new(fields: field_mask))
-# res = stub.get(Asnp::PostGetRequest.new(id: 1, fields: field_mask))
-p res
+1.times do
+  res = stub.list(Asnp::PostsListRequest.new(fields: field_mask))
+  # res = stub.get(Asnp::PostGetRequest.new(id: 1, fields: field_mask))
+  p res
+end
