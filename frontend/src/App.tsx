@@ -6,7 +6,7 @@ import "./App.css";
 import logo from "./logo.svg";
 
 const GET_POSTS = gql`
-  {
+  query getPosts {
     hello {
       id
       title
