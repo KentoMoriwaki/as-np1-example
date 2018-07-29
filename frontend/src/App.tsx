@@ -1,7 +1,22 @@
-import * as React from 'react';
-import './App.css';
+import * as React from "react";
+import gql from "graphql-tag";
+import { Query } from "react-apollo";
 
-import logo from './logo.svg';
+import "./App.css";
+import logo from "./logo.svg";
+
+const GET_POSTS = gql`
+  {
+    hello {
+      id
+      title
+      user {
+        id
+        name
+      }
+    }
+  }
+`;
 
 class App extends React.Component {
   public render() {
@@ -11,9 +26,17 @@ class App extends React.Component {
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to React</h1>
         </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.tsx</code> and save to reload.
-        </p>
+        <Query query={GET_POSTS}>
+          {({ loading, error, data }) => {
+            if (loading) {
+              return "Loading...";
+            }
+            if (error) {
+              return "Error!";
+            }
+            return <p className="App-intro">{JSON.stringify(data)}</p>;
+          }}
+        </Query>
       </div>
     );
   }
