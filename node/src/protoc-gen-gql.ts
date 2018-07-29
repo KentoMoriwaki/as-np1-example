@@ -55,7 +55,7 @@ function fieldToName(field: FieldDescriptorProto.AsObject): string {
     case 13: // UINT32
     case 17: // SINT32
     case 18: // SINT64
-      return "Number";
+      return "Int";
     case 8: // STRING
     case 12: // BYTES
       return "Boolean";
@@ -63,7 +63,7 @@ function fieldToName(field: FieldDescriptorProto.AsObject): string {
       return "String";
     case 10:
       throw new Error("Group is not supported");
-    case 11:
+    case 11: // Message
       const splitted = field.typeName!.split(".");
       return splitted[splitted.length - 1];
     case 13: // ENUM
@@ -89,6 +89,10 @@ CodeGeneratorRequest()
   .then(protos =>
     protos.map(proto => {
       const typeStrs: string[] = [];
+      typeStrs.push(`
+type FieldMask {
+  value: [String!]!
+}`);
       proto.messageTypeList.forEach(message => {
         let typeStr = "";
         typeStr += `type ${message.name} {\n`;

@@ -4,8 +4,12 @@
   "main": "index.js",
   "private": true,
   "scripts": {
+    "start": "node lib/index.js",
+    "protoc": "protoc --plugin=./protoc-gen-gql --proto_path=../protos --gql_out=./generated ../protos/posts.proto"
   },
   "dependencies": {
+    "apollo-server": "^2.0.0",
+    "apollo-server-koa": "^2.0.0",
     "buffer-to-uint8array": "^1.1.0",
     "google-protobuf": "^3.6.0",
     "graphql": "^0.13.2",

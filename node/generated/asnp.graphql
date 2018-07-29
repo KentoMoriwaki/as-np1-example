@@ -1,17 +1,22 @@
+
+type FieldMask {
+  value: [String!]!
+}
+
 type Profile {
-  id: Number
+  id: Int
   introduction: String
 }
 
 type User {
-  id: Number
+  id: Int
   name: String
   profile: Profile
   posts: [Post]!
 }
 
 type Post {
-  id: Number
+  id: Int
   title: String
   description: String
   user: User
