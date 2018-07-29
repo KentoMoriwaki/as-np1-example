@@ -32,16 +32,21 @@ class Traverser
     mapper_class = field_mask_node.mapper
     message_class = field_mask_node.descriptor.msgclass
     @result = []
-    Array.wrap(record).each do |rec|
-      mapper = mapper_class.new(rec)
-      message = message_class.new
-      @result << message
-      @queue << {
-        mapper: mapper,
-        message: message,
-        node: field_mask_node,
-      }
-    end
+    @queue << {
+      value: record,
+      node: field_mask_node,
+      result: @result,
+    }
+    # Array.wrap(record).each do |rec|
+    #   mapper = mapper_class.new(rec)
+    #   message = message_class.new
+    #   @result << message
+    #   @queue << {
+    #     mapper: mapper,
+    #     message: message,
+    #     node: field_mask_node,
+    #   }
+    # end
     while task = @queue.shift
       consume_task(task)
     end
@@ -53,35 +58,32 @@ class Traverser
   end
 
   def consume_task(task)
-    mapper, message, node = task.values_at(:mapper, :message, :node)
-    node.children.each do |field, child_node|
-      if child_node.has_child?
-        value = mapper.public_send(field)
-        mapper_class = child_node.mapper
-        message_class = child_node.descriptor.msgclass
-        if child_node.repeated
-          value.each do |val|
-            child_mapper = mapper_class.new(val)
-            child_message = message_class.new
-            message[field] << child_message
-            @queue << {
-              mapper: child_mapper,
-              message: child_message,
-              node: child_node,
-            }
-          end
-        else
-          child_mapper = mapper_class.new(value)
-          child_message = message_class.new
-          message[field] = child_message
+    value, node, result = task.values_at(:value, :node, :result)
+    mapper_class = node.mapper
+    message_class = node.descriptor.msgclass
+    if value.is_a?(Enumerable)
+      value.each.with_index do |val, index|
+        message = message_class.new
+        result[index] = message
+        @queue << {
+          value: val,
+          node: node,
+          result: message
+        }
+      end
+    else
+      mapper = mapper_class.new(value)
+      node.children.each do |field, child_node|
+        if child_node.has_child?
+          result[field] ||= child_node.descriptor.msgclass.new
           @queue << {
-            mapper: child_mapper,
-            message: child_message,
+            value: mapper.public_send(field),
             node: child_node,
+            result: result[field],
           }
+        else
+          result[field] = mapper.public_send(field)
         end
-      else
-        message[field] = mapper.public_send(field)
       end
     end
   end
