@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "node lib/index.js",
-    "protoc": "protoc --plugin=./protoc-gen-gql --proto_path=../protos --gql_out=./generated ../protos/posts.proto"
+    "protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./generated --grpc_out=./generated --plugin=./protoc-gen-gql --proto_path=../protos --gql_out=./generated ../protos/posts.proto"
   },
   "dependencies": {
     "apollo-server": "^2.0.0",
@@ -13,12 +13,14 @@
     "buffer-to-uint8array": "^1.1.0",
     "google-protobuf": "^3.6.0",
     "graphql": "^0.13.2",
+    "grpc": "^1.13.1",
     "stream-to-promise": "^2.2.0"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.2.7",
     "@types/graphql": "^0.13.3",
     "@types/node": "^10.5.2",
+    "grpc-tools": "^1.6.6",
     "typescript": "^2.9.2"
   }
 }
