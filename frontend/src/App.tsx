@@ -2,11 +2,12 @@ import * as React from "react";
 import gql from "graphql-tag";
 import { Query } from "react-apollo";
 
+import { GetPosts } from "./__generated__/getPosts";
 import "./App.css";
 import logo from "./logo.svg";
 
 const GET_POSTS = gql`
-  query getPosts {
+  query GetPosts {
     hello {
       id
       title
@@ -26,7 +27,7 @@ class App extends React.Component {
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to React</h1>
         </header>
-        <Query query={GET_POSTS}>
+        <Query<GetPosts> query={GET_POSTS}>
           {({ loading, error, data }) => {
             if (loading) {
               return "Loading...";
@@ -34,7 +35,13 @@ class App extends React.Component {
             if (error) {
               return "Error!";
             }
-            return <p className="App-intro">{JSON.stringify(data)}</p>;
+            return (
+              <p className="App-intro">
+                {data!.hello.map(p => {
+                  return <li key={p.id!}>{p.title}</li>;
+                })}
+              </p>
+            );
           }}
         </Query>
       </div>

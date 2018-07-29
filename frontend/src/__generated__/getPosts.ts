@@ -4,25 +4,25 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: getPosts
+// GraphQL query operation: GetPosts
 // ====================================================
 
-export interface getPosts_hello_user {
+export interface GetPosts_hello_user {
   id: number | null;
   name: string | null;
 }
 
-export interface getPosts_hello {
+export interface GetPosts_hello {
   id: number | null;
   title: string | null;
-  user: getPosts_hello_user | null;
+  user: GetPosts_hello_user | null;
 }
 
-export interface getPosts {
+export interface GetPosts {
   /**
    * A simple type for getting started!
    */
-  hello: getPosts_hello[];
+  hello: GetPosts_hello[];
 }
 
 /* tslint:disable */
