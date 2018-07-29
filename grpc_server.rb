@@ -1,8 +1,12 @@
+require "grgr"
+
 class GrpcServer
   PORT = '127.0.0.1:8080'
 
   def initialize
-    @server = GRPC::RpcServer.new
+    @server = GRPC::RpcServer.new(
+      interceptors: [Grgr::GrpcInterceptors::ActiveRecordConnectionInterceptor.new]
+    )
     @server.add_http2_port(PORT, :this_port_is_insecure) # FIXME
     Rails.application.config.logger = ActiveSupport::Logger.new(STDOUT)
     Rails.application.config.logger.level = :debug

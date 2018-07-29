@@ -1,0 +1,1 @@
+require "grgr/grpc_interceptors/active_record_connection_interceptor"
