@@ -54,5 +54,4 @@ gem 'grpc'
 gem 'grpc-tools'
 gem 'logging'
 
-gem 'active_model_serializers', '~> 0.10.0'
 gem 'batch-loader'
