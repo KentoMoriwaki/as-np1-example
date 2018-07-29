@@ -1,24 +1,9 @@
-# README
+# grgr(Graphql and gRPC)
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Experiment for better relationships between Graphql and gRPC
 
-Things you may want to cover:
+## Goal
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+- [ ] Solve N+1 of DB by FieldMask
+- [ ] Generate Graphql schema from .proto
+- [ ] Generate TypeScript client used in Apollo resolver
