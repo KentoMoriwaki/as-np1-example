@@ -29,31 +29,20 @@ class Traverser
 
   def run
     @queue = []
-    mapper_class = field_mask_node.mapper
     message_class = field_mask_node.descriptor.msgclass
-    @result = []
+    @result = field_mask_node.repeated ? Google::Protobuf::RepeatedField.new(:message, message_class) : message_class.new
     @queue << {
       value: record,
       node: field_mask_node,
       result: @result,
     }
-    # Array.wrap(record).each do |rec|
-    #   mapper = mapper_class.new(rec)
-    #   message = message_class.new
-    #   @result << message
-    #   @queue << {
-    #     mapper: mapper,
-    #     message: message,
-    #     node: field_mask_node,
-    #   }
-    # end
     while task = @queue.shift
       consume_task(task)
     end
-    if record.is_a?(Enumerable)
-      @result
+    if field_mask_node.repeated
+      @result.to_ary
     else
-      @result.first
+      @result
     end
   end
 
