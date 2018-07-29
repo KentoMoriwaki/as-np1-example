@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "private": true,
+  "scripts": {
+  },
   "dependencies": {
     "buffer-to-uint8array": "^1.1.0",
     "google-protobuf": "^3.6.0",
