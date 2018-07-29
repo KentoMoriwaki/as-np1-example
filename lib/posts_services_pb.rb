@@ -15,6 +15,7 @@ module Asnp
       self.service_name = 'asnp.Posts'
 
       rpc :List, PostsListRequest, PostsListResponse
+      rpc :Get, PostGetRequest, Post
     end
 
     Stub = Service.rpc_stub_class

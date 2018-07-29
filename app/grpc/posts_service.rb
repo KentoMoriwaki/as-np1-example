@@ -5,14 +5,26 @@ module Grpc
     def list(req, _call)
       posts = Post.all
       fields = req.fields
-      posts_messages = resolve(Asnp::Post, posts, fields)
+      posts_messages = resolve_collection(Asnp::Post, posts, fields)
       Asnp::PostsListResponse.new({ posts: posts_messages })
+    end
+
+    def get(req, _call)
+      post = Post.find(req.id)
+      fields = req.fields
+      resolve(Asnp::Post, post, fields)
     end
 
     private
 
-    def resolve(message, records, fields)
-      field_mask_node = FieldMaskNode.build(message, fields.paths)
+    def resolve(message, record, fields = nil)
+      field_mask_node = FieldMaskNode.build(message, fields.paths, repeated: false)
+      traverser = Traverser.new(record, field_mask_node)
+      traverser.run
+    end
+
+    def resolve_collection(message, records, fields = nil)
+      field_mask_node = FieldMaskNode.build(message, fields.paths, repeated: true)
       traverser = Traverser.new(records, field_mask_node)
       traverser.run
     end
@@ -81,8 +93,8 @@ end
 class FieldMaskNode
   attr_reader :field_descriptor, :descriptor, :repeated, :children
 
-  def self.build(message, paths)
-    node = self.new(descriptor: message.descriptor, repeated: true)
+  def self.build(message, paths, repeated: false)
+    node = self.new(descriptor: message.descriptor, repeated: repeated)
     paths.each do |path|
       current_node = node
       path.split(".").each do |field|
@@ -96,7 +108,7 @@ class FieldMaskNode
     descriptor: nil,
     field_descriptor: nil,
     children: {},
-    repeated: nil
+    repeated: false
   )
     @descriptor = descriptor
     @field_descriptor = field_descriptor

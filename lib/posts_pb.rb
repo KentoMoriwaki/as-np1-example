@@ -28,6 +28,10 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     optional :fields, :message, 1, "google.protobuf.FieldMask"
     optional :message, :string, 2
   end
+  add_message "asnp.PostGetRequest" do
+    optional :id, :uint64, 1
+    optional :fields, :message, 2, "google.protobuf.FieldMask"
+  end
 end
 
 module Asnp
@@ -36,4 +40,5 @@ module Asnp
   Post = Google::Protobuf::DescriptorPool.generated_pool.lookup("asnp.Post").msgclass
   PostsListResponse = Google::Protobuf::DescriptorPool.generated_pool.lookup("asnp.PostsListResponse").msgclass
   PostsListRequest = Google::Protobuf::DescriptorPool.generated_pool.lookup("asnp.PostsListRequest").msgclass
+  PostGetRequest = Google::Protobuf::DescriptorPool.generated_pool.lookup("asnp.PostGetRequest").msgclass
 end

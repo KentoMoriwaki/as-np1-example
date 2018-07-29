@@ -6,6 +6,7 @@ package asnp;
 
 service Posts {
   rpc List (PostsListRequest) returns (PostsListResponse) {}
+  rpc Get (PostGetRequest) returns (Post) {}
 }
 
 message Profile {
@@ -34,4 +35,9 @@ message PostsListResponse {
 message PostsListRequest {
   google.protobuf.FieldMask fields = 1;
   string message = 2;
+}
+
+message PostGetRequest {
+  uint64 id = 1;
+  google.protobuf.FieldMask fields = 2;
 }

@@ -6,6 +6,9 @@ field_mask = Google::Protobuf::FieldMask.new(paths: [
   "user.name",
   "user.profile.introduction",
   "user.posts.id",
+  "user.posts.title",
   "user.posts.description"
 ])
-stub.list(Asnp::PostsListRequest.new(fields: field_mask))
+res = stub.list(Asnp::PostsListRequest.new(fields: field_mask))
+# res = stub.get(Asnp::PostGetRequest.new(id: 1, fields: field_mask))
+p res
